@@ -100,10 +100,8 @@ const isLoggedIn = !!Astro.locals.user;
 		<header class="site-header">
 			<nav class="nav">
 				<a href="/" class="site-title">
-					{siteLogo
-						? <img src={siteLogo.url} alt={siteLogo.alt || siteTitle} class="site-logo-img" />
-						: siteTitle
-					}
+					{siteLogo && <img src={siteLogo.url} alt={siteLogo.alt || siteTitle} class="site-logo-img" />}
+					<span class="site-title-text">{siteTitle}</span>
 				</a>
 				<div class="nav-right">
 					<LiveSearch
@@ -143,10 +141,8 @@ const isLoggedIn = !!Astro.locals.user;
 				<div class="footer-grid">
 					<div class="footer-brand">
 						<a href="/" class="footer-logo">
-							{siteLogo
-								? <img src={siteLogo.url} alt={siteLogo.alt || siteTitle} class="footer-logo-img" />
-								: siteTitle
-							}
+							{siteLogo && <img src={siteLogo.url} alt={siteLogo.alt || siteTitle} class="footer-logo-img" />}
+							<span class="footer-logo-text">{siteTitle}</span>
 						</a>
 						<p class="footer-tagline">{siteTagline}</p>
 					</div>
@@ -594,6 +590,9 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			.site-title {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.625rem;
 				font-size: var(--font-size-lg);
 				font-weight: 600;
 				color: var(--color-text);
@@ -777,6 +776,9 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			.footer-logo {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.625rem;
 				font-size: var(--font-size-lg);
 				font-weight: 600;
 				color: var(--color-text);
