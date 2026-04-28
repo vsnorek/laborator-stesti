@@ -1,0 +1,27 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "laborator-stesti",
+	"main": "./src/worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "laborator-stesti-db",
+			// Run `wrangler d1 create my-emdash-site` and paste the real ID here for deploy
+			"database_id": "22cea0ed-7a33-48e6-84f5-e36cc00310db",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "laborator-stesti-media","preview_bucket_name": "laborator-stesti-media",
+		},
+	],
+	// Worker Loader for plugin sandboxing
+	"worker_loaders": [
+		{
+			"binding": "LOADER",
+		},
+	],
+}
