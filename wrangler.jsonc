@@ -18,6 +18,9 @@
 			"bucket_name": "laborator-stesti-media","preview_bucket_name": "laborator-stesti-media",
 		},
 	],
+	"triggers": {
+		"crons": ["*/5 * * * *"],
+	},
 	// Worker Loader for plugin sandboxing
 	"worker_loaders": [
 		{
@@ -25,3 +28,4 @@
 		},
 	],
 }
+
