@@ -7,7 +7,7 @@ import { defineConfig, fontProviders, memoryCache } from "astro/config";
 import emdash from "emdash/astro";
 
 export default defineConfig({
-        experimental: { cache: { provider: memoryCache() } },
+    cache: { provider: memoryCache() },
     output: "server",
     adapter: cloudflare(),
     image: {
