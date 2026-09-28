@@ -56,8 +56,8 @@ const { items: results } = query
 								<h2 class="result-title">
 									{result.title ?? "Untitled"}
 								</h2>
-								{result.snippet && (
-									<p class="result-snippet" set:html={result.snippet} />
+									{result.snippet && (
+									<p class="result-snippet" set:html={result.snippet}></p>
 								)}
 							</a>
 						</li>
