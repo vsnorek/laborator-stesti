@@ -10,31 +10,30 @@ const query = Astro.url.searchParams.get("q")?.trim() || "";
 
 // Use the FTS-backed search() API instead of loading every post and
 // filtering in JS. FTS scales as the post count grows, returns ranked
-// results, and handles tokenization/stemming. Templates that grep all
-// post bodies in JS quickly become unusable past a few hundred posts.
+// results, and handles tokenization/stemming.
 const { items: results } = query
 	? await search(query, { collections: ["posts"], limit: 30 })
 	: { items: [] };
 
 // search() returns id/title/snippet only, not featured_image. Fetch the
-// collection once and map images by id rather than querying per result.
+// collection once and index images under both keys: entry.id is the slug,
+// entry.data.id is the database ULID, and search() may return either.
 const imageById = new Map<string, MediaValue | string>();
+
 if (results.length > 0) {
 	const { entries } = await getEmDashCollection("posts");
+
 	for (const entry of entries) {
-		if (entry.data.featured_image) {
-			imageById.set(entry.id, entry.data.featured_image);
-			if (entry.data.id) {
-				imageById.set(String(entry.data.id), entry.data.featured_image);
-		}
+		const image = entry.data.featured_image;
+		if (!image) continue;
+		imageById.set(String(entry.id), image);
+		if (entry.data.id) imageById.set(String(entry.data.id), image);
 	}
 }
 
 const resultsWithImages = results.map((result) => ({
 	...result,
-	image:
-		imageById.get(result.id) ??
-		(result.slug ? imageById.get(result.slug) : undefined),
+	image: imageById.get(String(result.id)) ?? imageById.get(String(result.slug)),
 }));
 ---
 
