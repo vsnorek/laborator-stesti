@@ -24,13 +24,17 @@ if (results.length > 0) {
 	for (const entry of entries) {
 		if (entry.data.featured_image) {
 			imageById.set(entry.id, entry.data.featured_image);
+			if (entry.data.id) {
+				imageById.set(String(entry.data.id), entry.data.featured_image);
+			}
 		}
 	}
-}
 
 const resultsWithImages = results.map((result) => ({
 	...result,
-	image: imageById.get(result.id),
+	image:
+		imageById.get(result.id) ??
+		(result.slug ? imageById.get(result.slug) : undefined),
 }));
 ---
 
