@@ -1,7 +1,9 @@
 ---
 export const prerender = false;
 
-import { search } from "emdash";
+import { search, getEmDashCollection } from "emdash";
+import type { MediaValue } from "emdash";
+import { Image } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 
 const query = Astro.url.searchParams.get("q")?.trim() || "";
@@ -13,6 +15,18 @@ const query = Astro.url.searchParams.get("q")?.trim() || "";
 const { items: results } = query
 	? await search(query, { collections: ["posts"], limit: 30 })
 	: { items: [] };
+
+// search() returns id/title/snippet only, not featured_image. Fetch the
+// collection once and map images by id rather than querying per result.
+const imageById = new Map<string, MediaValue | string>();
+if (results.length > 0) {
+	const { entries } = await getEmDashCollection("posts");
+	for (const entry of entries) {
+		if (entry.data.featured_image) {
+			imageById.set(entry.id, entry.data.featured_image);
+		}
+	}
+}
 ---
 
 <Base
@@ -47,21 +61,33 @@ const { items: results } = query
 		{
 			results.length > 0 && (
 				<ol class="search-results">
-					{results.map((result) => (
-						<li class="search-result">
-							<a
-								href={`/posts/${result.slug ?? result.id}`}
-								class="result-link"
-							>
-								<h2 class="result-title">
-									{result.title ?? "Untitled"}
-								</h2>
-								{result.snippet && (
-									<p class="result-snippet" set:html={result.snippet} />
-								)}
-							</a>
-						</li>
-					))}
+					{results.map((result) => {
+						const image = imageById.get(result.id);
+						return (
+							<li class="search-result">
+								
+									href={`/posts/${result.slug ?? result.id}`}
+									class="result-link"
+								>
+									{image ? (
+										<div class="result-image">
+											<Image image={image} />
+										</div>
+									) : (
+										<div class="result-placeholder" />
+									)}
+									<div class="result-body">
+										<h2 class="result-title">
+											{result.title ?? "Untitled"}
+										</h2>
+										{result.snippet && (
+											<p class="result-snippet" set:html={result.snippet} />
+										)}
+									</div>
+								</a>
+							</li>
+						);
+					})}
 				</ol>
 			)
 		}
@@ -149,9 +175,36 @@ const { items: results } = query
 	}
 
 	.result-link {
-		display: block;
+		display: flex;
+		gap: var(--spacing-5);
+		align-items: flex-start;
 		text-decoration: none;
 		color: inherit;
+	}
+
+	.result-image,
+	.result-placeholder {
+		flex: 0 0 160px;
+		aspect-ratio: 16 / 10;
+		overflow: hidden;
+		border-radius: var(--radius);
+		background: var(--color-surface);
+	}
+
+	.result-image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.3s ease;
+	}
+
+	.result-link:hover .result-image img {
+		transform: scale(1.03);
+	}
+
+	.result-body {
+		flex: 1;
+		min-width: 0;
 	}
 
 	.result-title {
@@ -178,5 +231,17 @@ const { items: results } = query
 		color: inherit;
 		padding: 0 0.1em;
 		border-radius: 2px;
+	}
+
+	@media (max-width: 640px) {
+		.result-link {
+			flex-direction: column;
+		}
+
+		.result-image,
+		.result-placeholder {
+			flex: none;
+			width: 100%;
+		}
 	}
 </style>
