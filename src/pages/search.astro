@@ -27,6 +27,12 @@ if (results.length > 0) {
 		}
 	}
 }
+
+// Pre-compute so the template can use a plain implicit-return map.
+const resultsWithImages = results.map((result) => ({
+	...result,
+	image: imageById.get(result.id),
+}));
 ---
 
 <Base
@@ -59,35 +65,32 @@ if (results.length > 0) {
 		}
 
 		{
-			results.length > 0 && (
+			resultsWithImages.length > 0 && (
 				<ol class="search-results">
-					{results.map((result) => {
-						const image = imageById.get(result.id);
-						return (
-							<li class="search-result">
-								
-									href={`/posts/${result.slug ?? result.id}`}
-									class="result-link"
-								>
-									{image ? (
-										<div class="result-image">
-											<Image image={image} />
-										</div>
-									) : (
-										<div class="result-placeholder" />
-									)}
-									<div class="result-body">
-										<h2 class="result-title">
-											{result.title ?? "Untitled"}
-										</h2>
-										{result.snippet && (
-											<p class="result-snippet" set:html={result.snippet} />
-										)}
+					{resultsWithImages.map((result) => (
+						<li class="search-result">
+							
+								href={`/posts/${result.slug ?? result.id}`}
+								class="result-link"
+							>
+								{result.image ? (
+									<div class="result-image">
+										<Image image={result.image} />
 									</div>
-								</a>
-							</li>
-						);
-					})}
+								) : (
+									<div class="result-placeholder" />
+								)}
+								<div class="result-body">
+									<h2 class="result-title">
+										{result.title ?? "Untitled"}
+									</h2>
+									{result.snippet && (
+										<p class="result-snippet" set:html={result.snippet} />
+									)}
+								</div>
+							</a>
+						</li>
+					))}
 				</ol>
 			)
 		}
