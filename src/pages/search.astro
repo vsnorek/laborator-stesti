@@ -26,9 +26,9 @@ if (results.length > 0) {
 			imageById.set(entry.id, entry.data.featured_image);
 			if (entry.data.id) {
 				imageById.set(String(entry.data.id), entry.data.featured_image);
-			}
 		}
 	}
+}
 
 const resultsWithImages = results.map((result) => ({
 	...result,
