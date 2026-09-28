@@ -22,7 +22,6 @@ const imageById = new Map<string, MediaValue | string>();
 
 if (results.length > 0) {
 	const { entries } = await getEmDashCollection("posts");
-
 	for (const entry of entries) {
 		const image = entry.data.featured_image;
 		if (!image) continue;
