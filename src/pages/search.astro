@@ -49,14 +49,11 @@ const { items: results } = query
 				<ol class="search-results">
 					{results.map((result) => (
 						<li class="search-result">
-							
-								href={`/posts/${result.slug ?? result.id}`}
-								class="result-link"
-							>
+							<a href={`/posts/${result.slug ?? result.id}`} class="result-link">
 								<h2 class="result-title">
 									{result.title ?? "Untitled"}
 								</h2>
-									{result.snippet && (
+								{result.snippet && (
 									<p class="result-snippet" set:html={result.snippet}></p>
 								)}
 							</a>
