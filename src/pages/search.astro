@@ -2,38 +2,35 @@
 export const prerender = false;
 
 import { search, getEmDashCollection } from "emdash";
-import type { MediaValue } from "emdash";
-import { Image } from "emdash/ui";
 import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import { getReadingTime } from "../utils/reading-time";
 
 const query = Astro.url.searchParams.get("q")?.trim() || "";
 
-// Use the FTS-backed search() API instead of loading every post and
-// filtering in JS. FTS scales as the post count grows, returns ranked
-// results, and handles tokenization/stemming.
-const { items: results } = query
+// Ranking and matching come from the FTS index rather than substring
+// comparisons in JS: results arrive ordered by relevance and the index
+// handles tokenization.
+const { items: hits } = query
 	? await search(query, { collections: ["posts"], limit: 30 })
 	: { items: [] };
 
-// search() returns id/title/snippet only, not featured_image. Fetch the
-// collection once and index images under both keys: entry.id is the slug,
-// entry.data.id is the database ULID, and search() may return either.
-const imageById = new Map<string, MediaValue | string>();
+// search() returns id/title/snippet only, so the cards still need the
+// collection for image, date and reading time. entry.id is the slug and
+// entry.data.id is the database ULID; search() may return either.
+const { entries: allPosts } = await getEmDashCollection("posts");
 
-if (results.length > 0) {
-	const { entries } = await getEmDashCollection("posts");
-	for (const entry of entries) {
-		const image = entry.data.featured_image;
-		if (!image) continue;
-		imageById.set(String(entry.id), image);
-		if (entry.data.id) imageById.set(String(entry.data.id), image);
-	}
-}
-
-const resultsWithImages = results.map((result) => ({
-	...result,
-	image: imageById.get(String(result.id)) ?? imageById.get(String(result.slug)),
-}));
+const results = hits
+	.map((hit) => ({
+		post: allPosts.find(
+			(post) =>
+				String(post.id) === String(hit.id) ||
+				String(post.data.id) === String(hit.id) ||
+				String(post.id) === String(hit.slug),
+		),
+		snippet: hit.snippet,
+	}))
+	.filter((row) => row.post !== undefined);
 ---
 
 <Base title={query ? `Search: ${query}` : "Search"} description="Search blog posts">
@@ -56,22 +53,12 @@ const resultsWithImages = results.map((result) => ({
 		}
 
 		{
-			resultsWithImages.length > 0 && (
-				<ol class="search-results">
-					{resultsWithImages.map((result) => (
-						<li class="search-result">
-							<a href={`/posts/${result.slug ?? result.id}`} class="result-link">
-								<div class="result-image">{result.image && <Image image={result.image} />}</div>
-								<div class="result-body">
-									<h2 class="result-title">{result.title ?? "Untitled"}</h2>
-									{result.snippet && (
-										<p class="result-snippet" set:html={result.snippet}></p>
-									)}
-								</div>
-							</a>
-						</li>
+			results.length > 0 && (
+				<div class="search-results">
+					{results.map((result) => (
+						<PostCard title={result.post.data.title} snippet={result.snippet} excerpt={result.post.data.excerpt} featuredImage={result.post.data.featured_image} href={`/posts/${result.post.id}`} date={result.post.data.publishedAt ?? undefined} readingTime={getReadingTime(result.post.data.content)} />
 					))}
-				</ol>
+				</div>
 			)
 		}
 
@@ -137,92 +124,8 @@ const resultsWithImages = results.map((result) => ({
 	}
 
 	.search-results {
-		list-style: none;
-		padding: 0;
-		margin: 0;
 		display: flex;
 		flex-direction: column;
-	}
-
-	.search-result {
-		padding: var(--spacing-6) 0;
-		border-bottom: 1px solid var(--color-border-subtle);
-	}
-
-	.search-result:first-child {
-		padding-top: 0;
-	}
-
-	.search-result:last-child {
-		border-bottom: none;
-	}
-
-	.result-link {
-		display: flex;
-		gap: var(--spacing-5);
-		align-items: flex-start;
-		text-decoration: none;
-		color: inherit;
-	}
-
-	.result-image {
-		flex: 0 0 160px;
-		aspect-ratio: 16 / 10;
-		overflow: hidden;
-		border-radius: var(--radius);
-		background: var(--color-surface);
-	}
-
-	.result-image img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transition: transform 0.3s ease;
-	}
-
-	.result-link:hover .result-image img {
-		transform: scale(1.03);
-	}
-
-	.result-body {
-		flex: 1;
-		min-width: 0;
-	}
-
-	.result-title {
-		font-size: var(--font-size-xl);
-		font-weight: 600;
-		line-height: var(--leading-snug);
-		margin-bottom: var(--spacing-2);
-		transition: color var(--transition-fast);
-	}
-
-	.result-link:hover .result-title {
-		color: var(--color-accent);
-	}
-
-	.result-snippet {
-		font-size: var(--font-size-base);
-		line-height: var(--leading-relaxed);
-		color: var(--color-text-secondary);
-	}
-
-	/* FTS returns <mark> wrapping the matched terms */
-	.result-snippet :global(mark) {
-		background: var(--color-accent-ring, rgba(99, 102, 241, 0.2));
-		color: inherit;
-		padding: 0 0.1em;
-		border-radius: 2px;
-	}
-
-	@media (max-width: 640px) {
-		.result-link {
-			flex-direction: column;
-		}
-
-		.result-image {
-			flex: none;
-			width: 100%;
-		}
+		gap: var(--spacing-8);
 	}
 </style>
