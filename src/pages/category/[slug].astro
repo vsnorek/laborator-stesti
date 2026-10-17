@@ -37,20 +37,20 @@ const filteredPosts = posts.map((post) => ({
 }));
 ---
 
-<Base title={`${term.label} posts`} description={`All posts in ${term.label}`}>
+<Base title={`Rubrika ${term.label}`} description={`Všechny články v rubrice ${term.label}`}>
 	<section class="archive-section">
 		<header class="archive-header">
-			<span class="archive-label">Category</span>
+			<span class="archive-label">Rubrika</span>
 			<h1 class="archive-title">{term.label}</h1>
 			<p class="archive-count">
 				{filteredPosts.length}
-				{filteredPosts.length === 1 ? "post" : "posts"}
+				{filteredPosts.length === 1 ? "článek" : filteredPosts.length >= 2 && filteredPosts.length <= 4 ? "články" : "článků"}
 			</p>
 		</header>
 
 		{
 			filteredPosts.length === 0 ? (
-				<p class="no-posts">No posts in this category yet.</p>
+				<p class="no-posts">V této rubrice zatím nejsou žádné články.</p>
 			) : (
 				<div class="posts-grid">
 					{filteredPosts.map(({ post, tags }) => (
