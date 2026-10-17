@@ -33,21 +33,21 @@ const results = hits
 	.filter((row) => row.post !== undefined);
 ---
 
-<Base title={query ? `Search: ${query}` : "Search"} description="Search blog posts">
+<Base title={query ? `Hledání: ${query}` : "Hledání"} description="Hledání v článcích">
 	<section class="search-page">
-		<h1 class="search-title">Search</h1>
+		<h1 class="search-title">Hledání</h1>
 
 		<form method="get" action="/search" class="search-form">
-			<input type="search" name="q" value={query} placeholder="Search posts..." class="search-input" autofocus />
-			<button type="submit" class="search-button">Search</button>
+			<input type="search" name="q" value={query} placeholder="Hledat v článcích…" class="search-input" autofocus />
+			<button type="submit" class="search-button">Hledat</button>
 		</form>
 
 		{
 			query && (
 				<p class="search-summary">
 					{results.length === 0
-						? `No results for "${query}"`
-						: `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"`}
+						? `Pro „${query}“ nebyly nalezeny žádné výsledky.`
+						: `${results.length} ${results.length === 1 ? "výsledek" : results.length >= 2 && results.length <= 4 ? "výsledky" : "výsledků"} pro „${query}“`}
 				</p>
 			)
 		}
@@ -62,7 +62,7 @@ const results = hits
 			)
 		}
 
-		{!query && <p class="search-hint">Enter a search term to find posts.</p>}
+		{!query && <p class="search-hint">Zadejte hledaný výraz.</p>}
 	</section>
 </Base>
 
